@@ -4,6 +4,7 @@ from .models import User
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
@@ -34,7 +35,6 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
-        email = request.POST["email"]
 
         # Ensure passwords match
         password = request.POST["password"]
@@ -46,7 +46,7 @@ def register(request):
 
         # Try to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(username, password)
             user.save()
         except IntegrityError:
              return render(request, "investalyze/register.html", {
@@ -57,3 +57,7 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "investalyze/register.html")
+
+@login_required
+def dashboard(request):
+    return render(request, "investalyze/dashboard.html")

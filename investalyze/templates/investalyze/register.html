@@ -1,30 +1,45 @@
 {% extends "investalyze/layout.html" %}
 
 {% block body %}
-
-    <h2 class="p-3">Create your account</h2>
-
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
-
-    <div class="container w-50 p-3 pt-4 bg-white rounded">
-        <form action="{% url 'register' %}" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <input class="form-control" autofocus type="text" name="username" placeholder="Username" required>
+        <div class="container">
+            <div class="row justify-content-center text-white">
+                {% if message %}
+                <div>{{ message }}</div>
+                {% endif %}
             </div>
-            <div class="form-group">
-                <input class="form-control" type="email" name="email" placeholder="Email Address">
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div class="card shadow-lg border-0 rounded-lg mt-5">
+                        <div class="card-header"><h3 class="text-center font-weight-light my-4">Create Account</h3></div>
+                        <div class="card-body">
+                            <form action="{% url 'register' %}" method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label class="small mb-1">Username</label>
+                                    <input class="form-control py-4" name="username" placeholder="Enter username" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="small mb-1">Password</label>
+                                            <input class="form-control py-4" name="password" type="password" placeholder="Enter password" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="small mb-1">Confirm Password</label>
+                                            <input class="form-control py-4" name="confirmation" type="password" placeholder="Confirm password" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input class="btn btn-primary btn-block mt-4 mb-0" type="submit" value="Create Account">
+                            </form>
+                        </div>
+                        <div class="card-footer text-center">
+                            <div class="small"><a href="{% url 'login' %}">Have an account? Login here.</a></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="password" placeholder="Password" required>
-            </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password" required>
-            </div>
-            <input class="btn btn-primary btn-lg mt-1" type="submit" value="Register">
-        </form>
-    </div>
-
+        </div>
 {% endblock %}
