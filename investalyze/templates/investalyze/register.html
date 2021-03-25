@@ -1,13 +1,11 @@
 {% extends "investalyze/layout.html" %}
 
+{% block header %}
+    Register
+{% endblock header %}
+
 {% block body %}
-
-    <h2 class="p-3">Create your account</h2>
-
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
-
+    {% include "investalyze/includes/messages.html" %}
     <div class="container w-50 p-3 pt-4 bg-white rounded">
         <form action="{% url 'register' %}" method="post">
             {% csrf_token %}

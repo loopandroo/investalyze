@@ -1,12 +1,11 @@
 {% extends "investalyze/layout.html" %}
 
+{% block header %}
+    Sign In
+{% endblock header %}
+
 {% block body %}
-    <div>
-        <h2 class="p-3">Sign In</h2>
-    </div>
-    {% if message %}
-    <div class="text">{{ message }}</div>
-    {% endif %}
+    {% include "investalyze/includes/messages.html" %}
     <div class="container w-50 p-3 pt-4 bg-white rounded">
         <form action="{% url 'login' %}" method="post">
             {% csrf_token %}
@@ -19,4 +18,4 @@
             <input class="btn btn-primary btn-lg mt-1" type="submit" value="Login">
         </form>
     </div>
-{% endblock %}
+{% endblock body %}
