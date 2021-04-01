@@ -6,6 +6,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+import pandas as pd
+import numpy as np
+import io
 import csv 
 import dateutil.parser
 
@@ -62,37 +66,34 @@ def register(request):
 @login_required
 def dashboard(request):
     if request.method == "POST":
-        csv_file = request.FILES['file']
+        file = request.FILES['file']
 
-        if not csv_file.name.endswith('.csv'):
+        if not file.name.endswith('.csv'):
             messages.error(request, 'Trading history must be in a CSV file.')
             return HttpResponseRedirect(reverse("dashboard"))
         
-        data_set = csv_file.read().decode('UTF-8').split('\n')
+        # Convert django file object into in-memory text stream
+        data_set = file.read().decode('UTF-8')
+        data = io.StringIO(data_set)
 
-        reader = csv.reader(data_set)
+        # Get filled orders and convert the result to dict
+        df = pd.read_csv(data, sep=",")
+        df = df.loc[df['Status'] == 'Filled']
+        df_records = df.to_dict('records')
 
-        for row in reader:
-            try:
-                # Check if order was filled
-                if row[3] == "Filled":
-                    ticker = row[1]
-                    side = row[2]
-                    quantity = row[5]
-                    price = row[6][1:]
-                    time = dateutil.parser.parse(row[10][:-3])
-                    
-                    order = Order(ticker=ticker, side=side, quantity=quantity, price=price, time=time, user=request.user)
-                    
-                    # Skip order if it already exists
-                    try:
-                        order.save()
-                    except IntegrityError:
-                        pass
-                    
-            except IndexError:
-                pass
+        # Create list of Order objects
+        order_objects = [Order(
+            ticker=record['Symbol'],
+            side=record['Side'], 
+            quantity=record['Total Qty'], 
+            price=record['Price'][1:], 
+            time=dateutil.parser.parse(record['Filled Time'][:-3]), 
+            user=request.user
+        ) for record in df_records]
+        
+        Order.objects.bulk_create(order_objects, ignore_conflicts=True)
 
         return HttpResponseRedirect(reverse("dashboard"))
     else:
+        orders = request.user.orders.all()
         return render(request, "investalyze/dashboard.html")
