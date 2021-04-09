@@ -1,0 +1,19 @@
+$text-color: white;
+
+a {
+    text-decoration: none;
+}
+
+.header {
+    color:$text-color;
+    &:hover {
+        color: white;
+    }
+}
+
+.nav-link {
+    @extend .header;
+    &:hover {
+        color: #e6e6e6;
+    }
+}

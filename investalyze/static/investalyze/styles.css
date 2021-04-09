@@ -1,4 +1,16 @@
-.form-control {
-    margin-bottom: 14px;
-    padding: 14px;
+a {
+  text-decoration: none;
 }
+
+.header, .nav-link {
+  color: white;
+}
+.header:hover, .nav-link:hover {
+  color: white;
+}
+
+.nav-link:hover {
+  color: #e6e6e6;
+}
+
+/*# sourceMappingURL=styles.css.map */

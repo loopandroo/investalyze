@@ -5,17 +5,33 @@
 {% endblock header %}
 
 {% block body %}
-    {% include "investalyze/includes/messages.html" %}
-    <div class="container w-50 p-3 pt-4 bg-white rounded">
-        <form action="{% url 'login' %}" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <input autofocus class="form-control" type="text" name="username" placeholder="Username">
+    <div class="container">
+        <div class="row justify-content-center text-white">
+            {% include "investalyze/includes/messages.html" %}
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
+                <div class="card mt-5">
+                    <div class="card-header"><h3 class="text-center display-6 my-4">Login</h3></div>
+                    <div class="card-body">
+                        <form action="{% url 'login' %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-floating mb-3">
+                                <input class="form-control" name="username" placeholder="Username">
+                                <label for="username">Username</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input class="form-control" name="password" type="password" placeholder="Password">
+                                <label for="password">Password</label>
+                            </div>
+                            <input class="btn btn-primary w-100 mt-4 mb-0" type="submit" value="Login">
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <div class="small">Not registered? <a href="{% url 'register' %}">Create an account.</a></div>
+                    </div> 
+                </div>
             </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="password" placeholder="Password">
-            </div>
-            <input class="btn btn-primary btn-lg mt-1" type="submit" value="Login">
-        </form>
+        </div>
     </div>
 {% endblock body %}

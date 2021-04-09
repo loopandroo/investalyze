@@ -1,9 +1,23 @@
 {% extends "investalyze/layout.html" %}
 
-{% block header %}
-    Dashboard
-{% endblock header %}
-
 {% block body %}
-    {% include "investalyze/includes/messages.html" %}
+    
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4 class="float-md-start header d-inline">Dashboard</h4>
+            </div>
+            <div class="col">
+                <form class="float-md-end d-inline" action="{% url 'dashboard' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="btn btn-outline-light">
+                    <h5 class="mb-0">Upload</h5> <input type="file" name="file" onchange="form.submit()" hidden>
+                    </label>
+                </form>   
+            </div>
+        </div>
+        <div class="row">
+            {% include "investalyze/includes/messages.html" %}
+        </div>
+    </div>
 {% endblock body %}

@@ -18,3 +18,9 @@ class Order(models.Model):
     def __str__(self):
         return f"{self.user.username} {'bought'if self.side == 'Buy' else 'sold'} {self.quantity} share(s) of {self.ticker} on {self.time}"
     
+    @property
+    def net(self):
+        return self.price * self.quantity 
+        
+    def chart(self):
+        return f"{self.ticker.center(5, ' ')} | {'B'if self.side == 'Buy' else 'S'} | ${str(self.price).center(6, ' ')} | {str(self.quantity).center(5, ' ')} | {self.time} "

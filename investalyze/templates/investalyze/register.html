@@ -5,24 +5,47 @@
 {% endblock header %}
 
 {% block body %}
-    {% include "investalyze/includes/messages.html" %}
-    <div class="container w-50 p-3 pt-4 bg-white rounded">
-        <form action="{% url 'register' %}" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <input class="form-control" autofocus type="text" name="username" placeholder="Username" required>
+    <div class="container">
+        <div class="row justify-content-center text-white">
+            {% include "investalyze/includes/messages.html" %}
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card mt-5">
+                    <div class="card-header"><h3 class="text-center display-6 my-4">Create Account</h3></div>
+                    <div class="card-body">
+                        <form action="{% url 'register' %}" method="post">
+                            {% csrf_token %}
+                            <div class="row g-3 mb-3">
+                                <div class="col-md">
+                                    <div class="form-floating">
+                                        <input class="form-control" name="username" placeholder="Username" required>
+                                        <label for="username">Username</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md">
+                                    <div class="form-floating">
+                                        <input class="form-control" name="password" type="password" placeholder="Password" required>
+                                        <label for="password">Password</label>
+                                    </div>
+                                </div>
+                                <div class="col-md">
+                                    <div class="form-floating">
+                                        <input class="form-control" name="confirmation" type="password" placeholder="Confirm Password" required>
+                                        <label for="confirmation">Confirm Password</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <input class="btn btn-primary w-100 mt-4 mb-0" type="submit" value="Create Account">
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <div class="small">Already registered? <a href="{% url 'login' %}">Login here.</a></div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <input class="form-control" type="email" name="email" placeholder="Email Address">
-            </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="password" placeholder="Password" required>
-            </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password" required>
-            </div>
-            <input class="btn btn-primary btn-lg mt-1" type="submit" value="Register">
-        </form>
+        </div>
     </div>
-
 {% endblock %}
