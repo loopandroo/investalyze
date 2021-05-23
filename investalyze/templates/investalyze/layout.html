@@ -12,18 +12,18 @@
 </head>
 
 <body class="text-center bg-dark">
-  <nav class="navbar navbar-default border-bottom mb-4">
+  <nav class="navbar navbar-default p-0 border-bottom mb-4">
     <div class="container-fluid">
       <a class="header" href="{% url 'index' %}">
-        <h2 class="float-md-start d-inline mb-0">invest</h2><h4 class="float-md-start d-inline mt-2">alyze</h4>
+        <h2 class="float-md-start display-5 d-inline mb-0">invest</h2><h4 class="float-md-start display-6 d-inline mt-2">alyze</h4>
       </a>
       <ul class="nav navbar-nav-inline">
         {% if user.is_authenticated %}
-        <a class="nav-link" href="{% url 'dashboard' %}"><h5>Dashboard</h5></a>
-        <a class="nav-link" href="{% url 'logout' %}"><h5>Logout</h5></a>
+        <a class="nav-link" href="{% url 'dashboard' %}"><h5 class="display-6">Dashboard</h5></a>
+        <a class="nav-link" href="{% url 'logout' %}"><h5 class="display-6">Logout</h5></a>
         {% else %}
-        <a class="nav-link" href="{% url 'login'%}"><h5>Login</h5></a>
-        <a class="nav-link" href="{% url 'register' %}"><h5>Register</h5></a>
+        <a class="nav-link" href="{% url 'login'%}"><h5 class="display-6">Login</h5></a>
+        <a class="nav-link" href="{% url 'register' %}"><h5 class="display-6">Register</h5></a>
         {% endif %}
       </ul>
     </div>

@@ -1,14 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls.base import translate_url
-from .models import User, Order
+from .models import User, Order, Lot
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-import io, copy, dateutil.parser, csv
+import io
+import dateutil.parser
+import csv
 
 
 def index(request):
@@ -72,14 +74,16 @@ def dashboard(request):
             messages.error(request, 'Trading history must be in a CSV file.')
             return HttpResponseRedirect(reverse("dashboard"))
 
-        # Convert django file object into in-memory text stream
         data_set = file.read().decode('UTF-8')
+        # Convert django file object into in-memory text stream
         data = io.StringIO(data_set)
 
         records = csv.DictReader(data)
 
+        orders = request.user.orders.all()
+
         try:
-            order_objects = [Order(
+            order_instances = [Order(
                 ticker=record['Symbol'],
                 side=record['Side'],
                 quantity=record['Total Qty'],
@@ -87,64 +91,78 @@ def dashboard(request):
                 time=dateutil.parser.parse(record['Filled Time'][:-3]),
                 user=request.user)
                 for record in records
-                if record['Status'] == 'Filled']
+                if record['Status'] == 'Filled' and not isDuplicate(record, orders)]
+        except Exception:
+            messages.error(
+                request,
+                'No trade executions were found in the file selected.')
 
-            Order.objects.bulk_create(order_objects, ignore_conflicts=True)
-            messages.success(request, 'Trade executions were imported successfully.')
-        except KeyError:
-            messages.error(request, 'No trade executions were found in the file selected.')
+        if order_instances:
+            Order.objects.bulk_create(order_instances)
+
+            all_orders = request.user.orders.all().order_by('time')
+            for sell_order in all_orders.filter(side='Sell', lot=None):
+                create_lot(sell_order, all_orders)
+
+            messages.success(
+                request, 'Trade executions were imported successfully.')
+
+        else:
+            messages.info(
+                request,
+                'Novel trade executions were not found in the file selected.')
 
         return HttpResponseRedirect(reverse("dashboard"))
     else:
-        orders = request.user.orders.all().order_by('time')
-
-        # Populate a Dict mapping each ticker to a list of its buy orders
-        unique_tickers = {
-            order.ticker: list(orders.filter(side='Buy', ticker=order.ticker))
-            for order in orders}
-
-        # List of transactions 
-        transactions = [
-            match(sell_order, unique_tickers[sell_order.ticker])
-            for sell_order in orders.filter(side='Sell')]
-        
-        print(transactions)
-        
-        open = {key:value for key, value in unique_tickers.items() if value}
-
         return render(request, "investalyze/dashboard.html")
 
-def match(sellOrder, buyOrderList):
-    ''' Returns a dict containing the sell order and respective buy order(s) (FIFO)
-        Removes all shares sold from buyOrderList
+
+def isDuplicate(record, orders):
+    queryset = orders.filter(
+        ticker=record['Symbol'],
+        side=record['Side'],
+        price=record['Price'].replace('@', ''),
+        time=dateutil.parser.parse(record['Filled Time'][:-3])
+    )
+    return queryset.exists()
+
+
+def create_lot(sell_order, all_orders):
+    ''' Creates a lot instance for the sell_order and adds respective buy orders to lot.orders.
+        If a buy order is only partially needed to complete a given sell_order, the buy order is split.
     '''
+    lot = Lot(user=sell_order.user)
+    lot.save()
 
-    res = {'sell': sellOrder, 'buy': []}
-    numAccounted = 0
-    numSold = sellOrder.quantity
+    lot.orders.add(sell_order)
 
-    # While qty of shares accounted for != qty of shares sold
-    while numAccounted != numSold:
-        # Negative Buy Orders
-        if not buyOrderList:
-            return res
+    num_accounted = 0
+    num_sold = sell_order.quantity
 
-        buyOrder = buyOrderList[0]    # First order in list
-        numBought = buyOrder.quantity
-        numMissing = numSold - numAccounted     # Qty of unaccounted shares
+    # while qty of shares accounted for != qty of shares sold
+    while num_accounted != num_sold:
+        buy_order_queryset = all_orders.filter(
+            ticker=sell_order.ticker, side='Buy', lot=None)
 
-        # Transfer max qty of shares from buyOrder to numAccounted so as to not exceed numMissing
-        if numBought <= numMissing:
-            buyOrderList.remove(buyOrder)
+        # negative buy orders
+        if not buy_order_queryset:
+            return
 
-            res['buy'].append(buyOrder)
-            numAccounted += numBought
+        buy_order = buy_order_queryset[0]   # oldest order not already in a lot
+        num_bought = buy_order.quantity
+        num_unaccounted = num_sold - num_accounted     # qty of unaccounted shares
+
+        # transfer max qty of shares from buy_order to num_accounted
+        if num_bought <= num_unaccounted:
+            lot.orders.add(buy_order)
+            num_accounted += num_bought
         else:
-            buyOrder.quantity -= numMissing
+            # split buy_order
+            buy_order.quantity -= num_unaccounted
 
-            transfer = copy.copy(buyOrder)
-            transfer.quantity = numMissing
+            buy_order.pk = None                     
+            buy_order.quantity = num_unaccounted
+            buy_order.save()
+            lot.orders.add(buy_order)
 
-            res['buy'].append(transfer)
-            numAccounted += numMissing
-    return res
+            num_accounted += num_unaccounted
